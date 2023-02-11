@@ -2,10 +2,10 @@ package Enums;
 
 public enum ObjectTypes {
   PLAYER(1);
-  FOOD(2),
-  WORMHOLE(3),
-  GASCLOUD(4),
-  ASTEROIDFIELD(5)
+  FOOD(2);
+  WORMHOLE(3);
+  GASCLOUD(4);
+  ASTEROIDFIELD(5);
   TORPEDOSALVO(6);
   SUPERFOOD(7);
   SUPERNOVAPICKUP(8);
