@@ -101,11 +101,11 @@ public class BotService {
             }
             // Menjauh jika ada player lain yang berpotensi memakan
             if (!playerList.isEmpty() && nearestPlayer(playerList.get(0)) == 1){
-                playerAction.heading = getHeadingBetween(bot, playerList.get(0)) - 180;
+                playerAction.heading = getHeadingBetween(bot, playerList.get(0)) - 160;
             }
             // Jika terlalu dekat ke ujung
-            if (getDistanceBetween(center, bot) + bot.getSize() + 5 > gameState.getWorld().getRadius()){
-                playerAction.heading = getHeadingBetween(bot, center);
+            if (getDistanceBetween(center, bot) + bot.getSize() + 40 > gameState.getWorld().getRadius()){
+                playerAction.heading = getHeadingBetween(bot, center) - 40;
             }
             // Mendekat jika ada player yang bisa dimakan
             else if(!playerList.isEmpty() && nearestPlayer(playerList.get(0)) == 2){
@@ -125,18 +125,18 @@ public class BotService {
     }
 
     public boolean nearGasCloud(GameObject gascloud){
-        return bot.getSize() + gascloud.getSize() > getDistanceBetween(bot, gascloud);
+        return bot.getSize() + gascloud.getSize() + 100 > getDistanceBetween(bot, gascloud);
     }
 
     public boolean nearAsteroidfield(GameObject asteroidfield){
-        return bot.getSize() + asteroidfield.getSize() > getDistanceBetween(bot, asteroidfield);
+        return bot.getSize() + asteroidfield.getSize() + 100 > getDistanceBetween(bot, asteroidfield);
     }
 
     public int nearestPlayer(GameObject player){
-        if (player.getSize() > bot.getSize() + 5 && getDistanceBetween(bot, player) < player.getSpeed()){
+        if (player.getSize() > 1.2*bot.getSize() && getDistanceBetween(bot, player) + 160 < player.getSpeed()){
             return 1; // bahaya player lain
         }
-        else if (player.getSize() < bot.getSize() + 5 && getDistanceBetween(bot, player) < bot.getSpeed()){
+        else if (player.getSize() < 1.2*bot.getSize() && getDistanceBetween(bot, player) + 30 < bot.getSpeed()){
             return 2; // bisa dikejar
         }
         else{
