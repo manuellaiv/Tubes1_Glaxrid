@@ -66,56 +66,103 @@ public class BotService {
                             .comparing(item -> getDistanceBetween(bot, item)))
                     .collect(Collectors.toList());
 
-            List <Double> priolist = new ArrayList<>();
-            if (!foodList.isEmpty()) {priolist.add(prio(foodList.get(0)));} 
-            if (!playerList.isEmpty()) {priolist.add(prio(playerList.get(0)));} 
-            if (!superfoodList.isEmpty()) {priolist.add(prio(superfoodList.get(0)));}
-            if (!gascloudList.isEmpty()) {priolist.add(prio(gascloudList.get(0)));}
-            if (!asteroidfieldList.isEmpty()) {priolist.add(prio(asteroidfieldList.get(0)));}
-            Collections.sort(priolist, Collections.reverseOrder());
+            // List <Double> priolist = new ArrayList<>();
+            // if (!foodList.isEmpty()) {priolist.add(prio(foodList.get(0)));} 
+            // if (!playerList.isEmpty()) {priolist.add(prio(playerList.get(0)));} 
+            // if (!superfoodList.isEmpty()) {priolist.add(prio(superfoodList.get(0)));}
+            // if (!gascloudList.isEmpty()) {priolist.add(prio(gascloudList.get(0)));}
+            // if (!asteroidfieldList.isEmpty()) {priolist.add(prio(asteroidfieldList.get(0)));}
+            // Collections.sort(priolist, Collections.reverseOrder());
 
-            if(!playerList.isEmpty() && prio(playerList.get(0)) == -999999){
-                playerAction.heading = getHeadingBetween(playerList.get(0)) - 180;
+            // if(!playerList.isEmpty() && prio(playerList.get(0)) == -999999){
+            //     playerAction.heading = getHeadingBetween(playerList.get(0)) - 180;
+            // }
+            // if(!gascloudList.isEmpty() && getDistanceBetween(bot, gascloudList.get(0)) < bot.getSize()){
+            //     playerAction.heading = getHeadingBetween(center);
+            // }
+            // if(!asteroidfieldList.isEmpty() && getDistanceBetween(bot, asteroidfieldList.get(0)) < bot.getSize()){
+            //     playerAction.heading = getHeadingBetween(asteroidfieldList.get(0))-60;
+            // }
+            // else if(!foodList.isEmpty() && priolist.get(0) == prio(foodList.get(0))){
+            //     playerAction.heading = getHeadingBetween(foodList.get(0));
+            // }
+            // else if(!playerList.isEmpty() && priolist.get(0) == prio(playerList.get(0))){
+            //     playerAction.heading = getHeadingBetween(playerList.get(0));
+            // }
+            // else if(!superfoodList.isEmpty() && priolist.get(0) == prio(superfoodList.get(0))){
+            //     playerAction.heading = getHeadingBetween(superfoodList.get(0));
+            // }
+
+            // Defaultnya arahkan ke makanan
+            playerAction.heading = getHeadingBetween(bot, foodList.get(0));
+            // Jika ada superfood arahkan ke superfood
+            if (!superfoodList.isEmpty() && getDistanceBetween(bot, superfoodList.get(0)) < getDistanceBetween(bot, foodList.get(0))){
+                playerAction.heading = getHeadingBetween(bot, superfoodList.get(0));
             }
-            if(!gascloudList.isEmpty() && getDistanceBetween(bot, gascloudList.get(0)) < bot.getSize()){
-                playerAction.heading = getHeadingBetween(center);
+            // Menjauh jika ada player lain yang berpotensi memakan
+            if (!playerList.isEmpty() && nearestPlayer(playerList.get(0)) == 1){
+                playerAction.heading = getHeadingBetween(bot, playerList.get(0)) - 180;
             }
-            if(!asteroidfieldList.isEmpty() && getDistanceBetween(bot, asteroidfieldList.get(0)) < bot.getSize()){
-                playerAction.heading = getHeadingBetween(asteroidfieldList.get(0))-60;
+            // Jika terlalu dekat ke ujung
+            if (getDistanceBetween(center, bot) + bot.getSize() + 5 > gameState.getWorld().getRadius()){
+                playerAction.heading = getHeadingBetween(bot, center);
             }
-            else if(!foodList.isEmpty() && priolist.get(0) == prio(foodList.get(0))){
-                playerAction.heading = getHeadingBetween(foodList.get(0));
+            // Mendekat jika ada player yang bisa dimakan
+            else if(!playerList.isEmpty() && nearestPlayer(playerList.get(0)) == 2){
+                playerAction.heading = getHeadingBetween(bot, playerList.get(0));
             }
-            else if(!playerList.isEmpty() && priolist.get(0) == prio(playerList.get(0))){
-                playerAction.heading = getHeadingBetween(playerList.get(0));
+            // Menjauhi gascloud
+            else if (!gascloudList.isEmpty() && nearGasCloud(gascloudList.get(0))){
+                playerAction.heading = playerAction.heading - 50;
             }
-            else if(!superfoodList.isEmpty() && priolist.get(0) == prio(superfoodList.get(0))){
-                playerAction.heading = getHeadingBetween(superfoodList.get(0));
+            // Menjauhi asteroidfield
+            else if (!asteroidfieldList.isEmpty() && nearAsteroidfield(asteroidfieldList.get(0))){
+                playerAction.heading = playerAction.heading - 50;
             }
         }
 
         this.playerAction = playerAction;
     }
 
-    public double prio(GameObject gameObject){
-        if(gameObject.getGameObjectType() == ObjectTypes.FOOD || gameObject.getGameObjectType() == ObjectTypes.SUPERFOOD || gameObject.getGameObjectType() == ObjectTypes.TELEPORTER){
-            return gameObject.getSize() - getDistanceBetween(bot, gameObject);
+    public boolean nearGasCloud(GameObject gascloud){
+        return bot.getSize() + gascloud.getSize() > getDistanceBetween(bot, gascloud);
+    }
+
+    public boolean nearAsteroidfield(GameObject asteroidfield){
+        return bot.getSize() + asteroidfield.getSize() > getDistanceBetween(bot, asteroidfield);
+    }
+
+    public int nearestPlayer(GameObject player){
+        if (player.getSize() > bot.getSize() + 5 && getDistanceBetween(bot, player) < player.getSpeed()){
+            return 1; // bahaya player lain
         }
-        else if(gameObject.getGameObjectType() == ObjectTypes.PLAYER){
-            if (gameObject.getSize() > bot.getSize() && getDistanceBetween(bot, gameObject) < gameObject.getSpeed()){
-                return -999999;
-            }
-            else{
-                return (double)gameObject.getSize()/(getDistanceBetween(bot, gameObject));
-            }
-        }
-        else if(gameObject.getGameObjectType() == ObjectTypes.GASCLOUD || gameObject.getGameObjectType() == ObjectTypes.ASTEROIDFIELD){
-            return -999999;
+        else if (player.getSize() < bot.getSize() + 5 && getDistanceBetween(bot, player) < bot.getSpeed()){
+            return 2; // bisa dikejar
         }
         else{
-            return -999999;
+            return 3; // tidak ada apa-apa
         }
     }
+
+    // public double prio(GameObject gameObject){
+    //     if(gameObject.getGameObjectType() == ObjectTypes.FOOD || gameObject.getGameObjectType() == ObjectTypes.SUPERFOOD || gameObject.getGameObjectType() == ObjectTypes.TELEPORTER){
+    //         return gameObject.getSize() - getDistanceBetween(bot, gameObject);
+    //     }
+    //     else if(gameObject.getGameObjectType() == ObjectTypes.PLAYER){
+    //         if (gameObject.getSize() > bot.getSize() && getDistanceBetween(bot, gameObject) < gameObject.getSpeed()){
+    //             return -999999;
+    //         }
+    //         else{
+    //             return (double)gameObject.getSize()/(getDistanceBetween(bot, gameObject));
+    //         }
+    //     }
+    //     else if(gameObject.getGameObjectType() == ObjectTypes.GASCLOUD || gameObject.getGameObjectType() == ObjectTypes.ASTEROIDFIELD){
+    //         return -999999;
+    //     }
+    //     else{
+    //         return -999999;
+    //     }
+    // }
 
 
     public GameState getGameState() {
@@ -138,9 +185,9 @@ public class BotService {
         return Math.sqrt(triangleX * triangleX + triangleY * triangleY);
     }
 
-    private int getHeadingBetween(GameObject otherObject) {
-        var direction = toDegrees(Math.atan2(otherObject.getPosition().y - bot.getPosition().y,
-                otherObject.getPosition().x - bot.getPosition().x));
+    private int getHeadingBetween(GameObject obj1, GameObject obj2) {
+        var direction = toDegrees(Math.atan2(obj2.getPosition().y - obj1.getPosition().y,
+                obj2.getPosition().x - obj1.getPosition().x));
         return (direction + 360) % 360;
     }
 
