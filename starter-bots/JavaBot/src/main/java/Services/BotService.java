@@ -65,33 +65,11 @@ public class BotService {
                     .sorted(Comparator
                             .comparing(item -> getDistanceBetween(bot, item)))
                     .collect(Collectors.toList());
-
-            // List <Double> priolist = new ArrayList<>();
-            // if (!foodList.isEmpty()) {priolist.add(prio(foodList.get(0)));} 
-            // if (!playerList.isEmpty()) {priolist.add(prio(playerList.get(0)));} 
-            // if (!superfoodList.isEmpty()) {priolist.add(prio(superfoodList.get(0)));}
-            // if (!gascloudList.isEmpty()) {priolist.add(prio(gascloudList.get(0)));}
-            // if (!asteroidfieldList.isEmpty()) {priolist.add(prio(asteroidfieldList.get(0)));}
-            // Collections.sort(priolist, Collections.reverseOrder());
-
-            // if(!playerList.isEmpty() && prio(playerList.get(0)) == -999999){
-            //     playerAction.heading = getHeadingBetween(playerList.get(0)) - 180;
-            // }
-            // if(!gascloudList.isEmpty() && getDistanceBetween(bot, gascloudList.get(0)) < bot.getSize()){
-            //     playerAction.heading = getHeadingBetween(center);
-            // }
-            // if(!asteroidfieldList.isEmpty() && getDistanceBetween(bot, asteroidfieldList.get(0)) < bot.getSize()){
-            //     playerAction.heading = getHeadingBetween(asteroidfieldList.get(0))-60;
-            // }
-            // else if(!foodList.isEmpty() && priolist.get(0) == prio(foodList.get(0))){
-            //     playerAction.heading = getHeadingBetween(foodList.get(0));
-            // }
-            // else if(!playerList.isEmpty() && priolist.get(0) == prio(playerList.get(0))){
-            //     playerAction.heading = getHeadingBetween(playerList.get(0));
-            // }
-            // else if(!superfoodList.isEmpty() && priolist.get(0) == prio(superfoodList.get(0))){
-            //     playerAction.heading = getHeadingBetween(superfoodList.get(0));
-            // }
+            var wormholeList = gameState.getGameObjects()
+                    .stream().filter(item -> item.getGameObjectType() == ObjectTypes.WORMHOLE)
+                    .sorted(Comparator
+                            .comparing(item -> getDistanceBetween(bot, item)))
+                    .collect(Collectors.toList());
 
             // Defaultnya arahkan ke makanan
             playerAction.heading = getHeadingBetween(bot, foodList.get(0));
@@ -101,10 +79,15 @@ public class BotService {
             }
             // Menjauh jika ada player lain yang berpotensi memakan
             if (!playerList.isEmpty() && nearestPlayer(playerList.get(0)) == 1){
-                playerAction.heading = getHeadingBetween(bot, playerList.get(0)) - 160;
+                if(isLeft(bot,playerList.get(0),playerAction.heading)){
+                    playerAction.heading = playerAction.heading - 160;
+                }
+                else{
+                    playerAction.heading = playerAction.heading + 160;
+                }
             }
             // Jika terlalu dekat ke ujung
-            if (getDistanceBetween(center, bot) + bot.getSize() + 40 > gameState.getWorld().getRadius()){
+            if (getDistanceBetween(center, bot) + 1.7*bot.getSize() > gameState.getWorld().getRadius()){
                 playerAction.heading = getHeadingBetween(bot, center) - 40;
             }
             // Mendekat jika ada player yang bisa dimakan
@@ -113,11 +96,30 @@ public class BotService {
             }
             // Menjauhi gascloud
             else if (!gascloudList.isEmpty() && nearGasCloud(gascloudList.get(0))){
-                playerAction.heading = playerAction.heading - 50;
+                if(isLeft(bot,gascloudList.get(0),playerAction.heading)){
+                    playerAction.heading = playerAction.heading - 70;
+                }
+                else{
+                    playerAction.heading = playerAction.heading + 70;
+                }
             }
             // Menjauhi asteroidfield
             else if (!asteroidfieldList.isEmpty() && nearAsteroidfield(asteroidfieldList.get(0))){
-                playerAction.heading = playerAction.heading - 50;
+                if(isLeft(bot,asteroidfieldList.get(0),playerAction.heading)){
+                    playerAction.heading = playerAction.heading - 70;
+                }
+                else{
+                    playerAction.heading = playerAction.heading + 70;
+                }
+            }
+            // Menjauhi wormhole
+            else if (!wormholeList.isEmpty() && nearWormhole(wormholeList.get(0))){
+                if(isLeft(bot,wormholeList.get(0),playerAction.heading)){
+                    playerAction.heading = playerAction.heading - 70;
+                }
+                else{
+                    playerAction.heading = playerAction.heading + 70;
+                }
             }
         }
 
@@ -125,18 +127,22 @@ public class BotService {
     }
 
     public boolean nearGasCloud(GameObject gascloud){
-        return bot.getSize() + gascloud.getSize() + 100 > getDistanceBetween(bot, gascloud);
+        return 1.2*bot.getSize() + 1.2*gascloud.getSize() > getDistanceBetween(bot, gascloud);
     }
 
     public boolean nearAsteroidfield(GameObject asteroidfield){
-        return bot.getSize() + asteroidfield.getSize() + 100 > getDistanceBetween(bot, asteroidfield);
+        return 1.2*bot.getSize() + asteroidfield.getSize() > getDistanceBetween(bot, asteroidfield);
+    }
+
+    public boolean nearWormhole(GameObject wormhole){
+        return 1.2*bot.getSize() + wormhole.getSize() > getDistanceBetween(bot, wormhole);
     }
 
     public int nearestPlayer(GameObject player){
-        if (player.getSize() > 1.2*bot.getSize() && getDistanceBetween(bot, player) + 160 < player.getSpeed()){
+        if (0.5*player.getSize() > 2.7*bot.getSize() && 2.6*getDistanceBetween(bot, player) < 0.7*player.getSpeed()){
             return 1; // bahaya player lain
         }
-        else if (player.getSize() < 1.2*bot.getSize() && getDistanceBetween(bot, player) + 30 < bot.getSpeed()){
+        else if (0.5*player.getSize() < 2.7*bot.getSize() && 2.6*getDistanceBetween(bot, player) < 0.7*bot.getSpeed()){
             return 2; // bisa dikejar
         }
         else{
@@ -144,26 +150,18 @@ public class BotService {
         }
     }
 
-    // public double prio(GameObject gameObject){
-    //     if(gameObject.getGameObjectType() == ObjectTypes.FOOD || gameObject.getGameObjectType() == ObjectTypes.SUPERFOOD || gameObject.getGameObjectType() == ObjectTypes.TELEPORTER){
-    //         return gameObject.getSize() - getDistanceBetween(bot, gameObject);
-    //     }
-    //     else if(gameObject.getGameObjectType() == ObjectTypes.PLAYER){
-    //         if (gameObject.getSize() > bot.getSize() && getDistanceBetween(bot, gameObject) < gameObject.getSpeed()){
-    //             return -999999;
-    //         }
-    //         else{
-    //             return (double)gameObject.getSize()/(getDistanceBetween(bot, gameObject));
-    //         }
-    //     }
-    //     else if(gameObject.getGameObjectType() == ObjectTypes.GASCLOUD || gameObject.getGameObjectType() == ObjectTypes.ASTEROIDFIELD){
-    //         return -999999;
-    //     }
-    //     else{
-    //         return -999999;
-    //     }
-    // }
-
+    public boolean isLeft(GameObject obj1, GameObject obj2, int heading){
+        int dif = getHeadingBetween(obj1, obj2);
+        if (heading > dif){
+            dif = dif + 360;
+        }
+        if(dif-heading <= 180){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 
     public GameState getGameState() {
         return this.gameState;

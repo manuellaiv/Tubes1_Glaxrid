@@ -16,7 +16,7 @@ start "" dotnet Logger.dll
 :: Bots
 cd ../reference-bot-publish/
 timeout /t 3
-start "" java -jar ..\starter-bots\JavaBot\target\Galaxrid.jar
+start "" java -jar ..\starter-bots\JavaBot\target\Glaxrid.jar
 timeout /t 3
 start "" dotnet ReferenceBot.dll
 timeout /t 3
