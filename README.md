@@ -26,9 +26,8 @@ Tugas Besar 1 IF2211 Strategi Algoritma Semester II Tahun 2022/2023 Pemanfaatan 
 
 ## How To Run
 
-1. Update game-runner-config.json. Change "player-a" to "./starter-bots/java".
-2. Go back to starter-pack folder.
-3. Click main.bat
+1. Go back to starter-pack folder.
+2. Click main.bat
 
 
 ## Greedy Algorithm
