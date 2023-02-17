@@ -91,20 +91,11 @@ public class BotService {
                 playerAction.heading = getHeadingBetween(bot, center) - 40;
             }
             // Mendekat jika ada player yang bisa dimakan
-            else if(!playerList.isEmpty() && nearestPlayer(playerList.get(0)) == 2){
+            if(!playerList.isEmpty() && nearestPlayer(playerList.get(0)) == 2){
                 playerAction.heading = getHeadingBetween(bot, playerList.get(0));
             }
-            // Menjauhi gascloud
-            else if (!gascloudList.isEmpty() && nearGasCloud(gascloudList.get(0))){
-                if(isLeft(bot,gascloudList.get(0),playerAction.heading)){
-                    playerAction.heading = playerAction.heading - 70;
-                }
-                else{
-                    playerAction.heading = playerAction.heading + 70;
-                }
-            }
             // Menjauhi asteroidfield
-            else if (!asteroidfieldList.isEmpty() && nearAsteroidfield(asteroidfieldList.get(0))){
+            if (!asteroidfieldList.isEmpty() && nearAsteroidfield(asteroidfieldList.get(0))){
                 if(isLeft(bot,asteroidfieldList.get(0),playerAction.heading)){
                     playerAction.heading = playerAction.heading - 70;
                 }
@@ -112,8 +103,17 @@ public class BotService {
                     playerAction.heading = playerAction.heading + 70;
                 }
             }
+            // Menjauhi gascloud
+            if (!gascloudList.isEmpty() && nearGasCloud(gascloudList.get(0))){
+                if(isLeft(bot,gascloudList.get(0),playerAction.heading)){
+                    playerAction.heading = playerAction.heading - 70;
+                }
+                else{
+                    playerAction.heading = playerAction.heading + 70;
+                }
+            }
             // Menjauhi wormhole
-            else if (!wormholeList.isEmpty() && nearWormhole(wormholeList.get(0))){
+            if (!wormholeList.isEmpty() && nearWormhole(wormholeList.get(0))){
                 if(isLeft(bot,wormholeList.get(0),playerAction.heading)){
                     playerAction.heading = playerAction.heading - 70;
                 }
